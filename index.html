@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="HabitFlow - A private, offline habit tracker. Track streaks, view analytics, stay consistent.">
+  <meta name="theme-color" content="#0f0b1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>HabitFlow</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div class="app-container" id="app">
+    <!-- Page content rendered here by router -->
+    <main class="page-content" id="page-content"></main>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bar" id="nav-bar">
+      <div class="nav-item active" data-route="/" id="nav-today">
+        <span class="nav-icon">📋</span>
+        <span>Today</span>
+      </div>
+      <div class="nav-item" data-route="/calendar" id="nav-calendar">
+        <span class="nav-icon">📅</span>
+        <span>Calendar</span>
+      </div>
+      <div class="nav-item" data-route="/stats" id="nav-stats">
+        <span class="nav-icon">📊</span>
+        <span>Stats</span>
+      </div>
+      <div class="nav-item" data-route="/settings" id="nav-settings">
+        <span class="nav-icon">⚙️</span>
+        <span>Settings</span>
+      </div>
+    </nav>
+  </div>
+
+  <!-- FAB for adding habits -->
+  <button class="fab" id="fab-add" aria-label="Add new habit">+</button>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
