@@ -2,31 +2,32 @@
  * HabitFlow - Service Worker
  *
  * Cache-first for local assets, network-first for Google Fonts.
+ * Uses relative paths to work on both localhost and GitHub Pages.
  */
 
-const CACHE_NAME = 'habitflow-v1';
+const CACHE_NAME = 'habitflow-v2';
 
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/css/index.css',
-  '/css/themes.css',
-  '/css/components.css',
-  '/js/app.js',
-  '/js/db.js',
-  '/js/router.js',
-  '/js/components/habitCard.js',
-  '/js/components/habitForm.js',
-  '/js/components/heatmap.js',
-  '/js/components/stats.js',
-  '/js/components/categoryFilter.js',
-  '/js/components/themeToggle.js',
-  '/js/utils/dateUtils.js',
-  '/js/utils/streak.js',
-  '/js/utils/notifications.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+const ASSET_PATHS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './css/index.css',
+  './css/themes.css',
+  './css/components.css',
+  './js/app.js',
+  './js/db.js',
+  './js/router.js',
+  './js/components/habitCard.js',
+  './js/components/habitForm.js',
+  './js/components/heatmap.js',
+  './js/components/stats.js',
+  './js/components/categoryFilter.js',
+  './js/components/themeToggle.js',
+  './js/utils/dateUtils.js',
+  './js/utils/streak.js',
+  './js/utils/notifications.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
 // ---------------------------------------------------------------------------
@@ -34,7 +35,7 @@ const ASSETS = [
 // ---------------------------------------------------------------------------
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSET_PATHS))
   );
   self.skipWaiting();
 });

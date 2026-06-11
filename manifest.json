@@ -2,7 +2,7 @@
   "name": "HabitFlow - Habit Tracker",
   "short_name": "HabitFlow",
   "description": "A private, offline habit tracker with streaks and analytics",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f0b1a",
