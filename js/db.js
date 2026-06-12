@@ -28,7 +28,7 @@ export async function getDB() {
   if (dbInstance) return dbInstance;
 
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('habitflow-db', 1);
+    const request = indexedDB.open('habitflow-db', 2);
 
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
@@ -52,6 +52,12 @@ export async function getDB() {
       // --- settings ---
       if (!db.objectStoreNames.contains('settings')) {
         db.createObjectStore('settings', { keyPath: 'key' });
+      }
+
+      // --- goals (v2) ---
+      if (!db.objectStoreNames.contains('goals')) {
+        const goalsStore = db.createObjectStore('goals', { keyPath: 'id' });
+        goalsStore.createIndex('date', 'date', { unique: false });
       }
     };
 

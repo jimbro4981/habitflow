@@ -28,7 +28,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 8px 16px;
+  padding: 8px 10px;
   border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--text-muted);
@@ -811,6 +811,131 @@
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 16px;
+}
+
+/* ========================================
+   Goals
+   ======================================== */
+.goals-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.goals-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.goals-add-btn {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+.goals-progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent-light);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.goals-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent-gradient);
+  transition: width 0.4s ease;
+}
+
+.goals-progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  margin-bottom: 12px;
+}
+
+.goal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.goal-item.goal-done {
+  opacity: 0.6;
+  background: var(--success-light);
+  border-color: var(--success);
+}
+
+.goal-check {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-color);
+  background: transparent;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.goal-check.checked {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+  animation: checkBounce 0.4s ease;
+}
+
+.goal-text {
+  flex: 1;
+  font-size: 15px;
+  color: var(--text-primary);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.goal-done .goal-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.goal-delete {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--danger-light);
+  color: var(--danger);
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: all 0.2s;
+}
+
+.goal-delete:hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 /* ========================================

@@ -5,7 +5,7 @@
  * Uses relative paths to work on both localhost and GitHub Pages.
  */
 
-const CACHE_NAME = 'habitflow-v4';
+const CACHE_NAME = 'habitflow-v5';
 
 const ASSET_PATHS = [
   './',
@@ -23,6 +23,7 @@ const ASSET_PATHS = [
   './js/components/stats.js',
   './js/components/categoryFilter.js',
   './js/components/themeToggle.js',
+  './js/components/goals.js',
   './js/utils/dateUtils.js',
   './js/utils/streak.js',
   './js/utils/notifications.js',

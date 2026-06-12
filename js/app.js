@@ -2,6 +2,7 @@ import { registerRoute, initRouter, navigate } from './router.js';
 import { renderTodayPage } from './components/habitCard.js';
 import { renderCalendarPage } from './components/heatmap.js';
 import { renderStatsPage } from './components/stats.js';
+import { renderGoalsPage } from './components/goals.js';
 import { renderSettingsPage, initTheme } from './components/themeToggle.js';
 import { openHabitForm } from './components/habitForm.js';
 import { getHabits } from './db.js';
@@ -13,6 +14,7 @@ async function init() {
   
   // Register routes
   registerRoute('/', renderTodayPage);
+  registerRoute('/goals', renderGoalsPage);
   registerRoute('/calendar', renderCalendarPage);
   registerRoute('/stats', renderStatsPage);
   registerRoute('/settings', renderSettingsPage);
