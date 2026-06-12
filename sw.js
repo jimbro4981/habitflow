@@ -5,7 +5,7 @@
  * Uses relative paths to work on both localhost and GitHub Pages.
  */
 
-const CACHE_NAME = 'habitflow-v2';
+const CACHE_NAME = 'habitflow-v3';
 
 const ASSET_PATHS = [
   './',
