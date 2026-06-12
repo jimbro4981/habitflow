@@ -74,6 +74,68 @@
 }
 
 /* ========================================
+   Date Navigator
+   ======================================== */
+.date-navigator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.date-nav-center {
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.date-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--accent-primary);
+  font-size: 22px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.date-nav-btn:hover {
+  background: var(--accent-light);
+  transform: scale(1.05);
+}
+
+.date-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.date-today-btn {
+  margin-top: 8px;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--accent-primary);
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  align-self: center;
+}
+
+.date-today-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* ========================================
    Habit Card
    ======================================== */
 .habit-card {
