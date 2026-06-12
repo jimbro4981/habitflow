@@ -1,148 +1,196 @@
 import { getCompletionCounts, getHabits, getCompletionsForDate } from '../db.js';
-import { formatDate, getToday, getDayName, getMonthName } from '../utils/dateUtils.js';
+import { formatDate, getToday, getFullMonthName } from '../utils/dateUtils.js';
+
+let currentYear;
+let currentMonth; // 0-indexed
 
 export async function renderCalendarPage(container) {
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
+
   container.innerHTML = `
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Calendar</h1>
-        <p class="page-subtitle">Your activity over time</p>
+    <div class="page-header" style="flex-direction: column; align-items: stretch;">
+      <div class="date-navigator" id="month-navigator">
+        <button class="date-nav-btn" id="month-prev" aria-label="Previous month">‹</button>
+        <div class="date-nav-center">
+          <h1 class="page-title" id="month-title"></h1>
+          <p class="page-subtitle" id="month-year"></p>
+        </div>
+        <button class="date-nav-btn" id="month-next" aria-label="Next month">›</button>
       </div>
     </div>
-    <div id="heatmap-wrapper" class="chart-container"></div>
+    <div id="calendar-grid-wrapper"></div>
     <div id="day-detail" style="margin-top: 16px"></div>
   `;
-  
-  await renderHeatmap();
+
+  // Month navigation
+  document.getElementById('month-prev').addEventListener('click', () => {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderMonth();
+  });
+
+  document.getElementById('month-next').addEventListener('click', () => {
+    const now = new Date();
+    // Don't go past current month
+    if (currentYear === now.getFullYear() && currentMonth >= now.getMonth()) return;
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderMonth();
+  });
+
+  await renderMonth();
 }
 
-async function renderHeatmap() {
-  const wrapper = document.getElementById('heatmap-wrapper');
+async function renderMonth() {
+  const wrapper = document.getElementById('calendar-grid-wrapper');
+  const titleEl = document.getElementById('month-title');
+  const yearEl = document.getElementById('month-year');
+  const nextBtn = document.getElementById('month-next');
   if (!wrapper) return;
-  
-  const today = new Date();
+
+  const now = new Date();
+  const isCurrentMonth = currentYear === now.getFullYear() && currentMonth === now.getMonth();
+
+  // Update header
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  if (titleEl) titleEl.textContent = monthNames[currentMonth];
+  if (yearEl) yearEl.textContent = currentYear.toString();
+
+  // Dim next button if on current month
+  if (nextBtn) {
+    nextBtn.style.opacity = isCurrentMonth ? '0.3' : '1';
+    nextBtn.style.pointerEvents = isCurrentMonth ? 'none' : 'auto';
+  }
+
+  // Get month data
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  // Monday=0 ... Sunday=6
+  let startDow = firstDay.getDay() - 1;
+  if (startDow < 0) startDow = 6;
+
+  const startDateStr = formatDate(firstDay);
+  const endDateStr = formatDate(lastDay);
+
   const habits = await getHabits(false);
   const totalHabits = habits.length;
-  
-  // Calculate 52 weeks back
-  const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - (52 * 7));
-  // Align to Monday
-  while (startDate.getDay() !== 1) {
-    startDate.setDate(startDate.getDate() - 1);
+  const counts = await getCompletionCounts(startDateStr, endDateStr);
+
+  const today = getToday();
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  // Build calendar grid
+  let html = `<div class="cal-month-grid">`;
+
+  // Day-of-week headers
+  html += `<div class="cal-dow-row">`;
+  for (const d of dayNames) {
+    html += `<div class="cal-dow">${d}</div>`;
   }
-  
-  const counts = await getCompletionCounts(formatDate(startDate), getToday());
-  
-  const cellSize = 14;
-  const cellGap = 3;
-  const leftPadding = 32;
-  const topPadding = 20;
-  const weeks = 53;
-  const svgWidth = leftPadding + weeks * (cellSize + cellGap);
-  const svgHeight = topPadding + 7 * (cellSize + cellGap);
-  
-  const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
-  
-  let svg = `<svg width="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg" style="font-family: Inter, sans-serif">`;
-  
-  // Day labels
-  dayLabels.forEach((label, i) => {
-    if (label) {
-      svg += `<text x="0" y="${topPadding + i * (cellSize + cellGap) + cellSize - 2}" fill="var(--text-muted)" font-size="10">${label}</text>`;
-    }
-  });
-  
-  // Month labels
-  let currentMonth = -1;
-  const currentDate = new Date(startDate);
-  for (let week = 0; week < weeks; week++) {
-    const weekDate = new Date(startDate);
-    weekDate.setDate(weekDate.getDate() + week * 7);
-    const month = weekDate.getMonth();
-    if (month !== currentMonth) {
-      currentMonth = month;
-      svg += `<text x="${leftPadding + week * (cellSize + cellGap)}" y="12" fill="var(--text-muted)" font-size="10">${getMonthName(weekDate)}</text>`;
-    }
+  html += `</div>`;
+
+  // Day cells
+  html += `<div class="cal-days">`;
+
+  // Empty cells before first day
+  for (let i = 0; i < startDow; i++) {
+    html += `<div class="cal-cell cal-empty"></div>`;
   }
-  
-  // Cells
-  const d = new Date(startDate);
-  for (let week = 0; week < weeks; week++) {
-    for (let day = 0; day < 7; day++) {
-      const dateStr = formatDate(d);
-      if (d <= today) {
-        const count = counts.get(dateStr) || 0;
-        const intensity = totalHabits > 0 ? count / totalHabits : 0;
-        const fill = getHeatmapColor(intensity);
-        
-        svg += `<rect 
-          class="heatmap-cell" 
-          x="${leftPadding + week * (cellSize + cellGap)}" 
-          y="${topPadding + day * (cellSize + cellGap)}" 
-          width="${cellSize}" 
-          height="${cellSize}" 
-          rx="3" 
-          fill="${fill}" 
-          data-date="${dateStr}" 
-          data-count="${count}"
-          style="cursor: pointer"
-        />`;
-      }
-      d.setDate(d.getDate() + 1);
-    }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = formatDate(new Date(currentYear, currentMonth, day));
+    const count = counts.get(dateStr) || 0;
+    const intensity = totalHabits > 0 ? count / totalHabits : 0;
+    const isToday = dateStr === today;
+    const isFuture = dateStr > today;
+
+    let cellClass = 'cal-cell';
+    if (isToday) cellClass += ' cal-today';
+    if (isFuture) cellClass += ' cal-future';
+    if (count > 0) cellClass += ' cal-has-data';
+
+    const bg = isFuture ? '' : `background: ${getCellBg(intensity)};`;
+
+    html += `
+      <div class="${cellClass}" data-date="${dateStr}" ${isFuture ? '' : 'style="cursor:pointer"'}>
+        <span class="cal-day-num">${day}</span>
+        ${!isFuture && totalHabits > 0 ? `
+          <span class="cal-day-dots">
+            ${count > 0 ? `<span class="cal-dot cal-dot-filled">${count}/${totalHabits}</span>` : `<span class="cal-dot cal-dot-empty">—</span>`}
+          </span>
+        ` : ''}
+        ${!isFuture && intensity >= 1 ? '<span class="cal-day-check">✓</span>' : ''}
+      </div>
+    `;
   }
-  
-  svg += '</svg>';
-  
-  wrapper.innerHTML = `
-    <h3 class="chart-title">Activity Heatmap</h3>
-    <div class="heatmap-container">${svg}</div>
-    <div style="display: flex; align-items: center; gap: 4px; justify-content: flex-end; margin-top: 8px; font-size: 11px; color: var(--text-muted)">
-      Less
-      ${[0, 0.25, 0.5, 0.75, 1].map(i => 
-        `<div style="width: 12px; height: 12px; border-radius: 2px; background: ${getHeatmapColor(i)}"></div>`
-      ).join('')}
-      More
+
+  // Empty cells after last day
+  const totalCells = startDow + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 0; i < remaining; i++) {
+    html += `<div class="cal-cell cal-empty"></div>`;
+  }
+
+  html += `</div>`; // cal-days
+  html += `</div>`; // cal-month-grid
+
+  // Legend
+  html += `
+    <div class="cal-legend">
+      <div class="cal-legend-item"><span class="cal-legend-box" style="background: var(--accent-light)"></span> None</div>
+      <div class="cal-legend-item"><span class="cal-legend-box" style="background: rgba(124,58,237,0.35)"></span> Some</div>
+      <div class="cal-legend-item"><span class="cal-legend-box" style="background: rgba(124,58,237,0.6)"></span> Most</div>
+      <div class="cal-legend-item"><span class="cal-legend-box" style="background: var(--accent-primary)"></span> All ✓</div>
     </div>
   `;
-  
-  // Click handler for cells
-  wrapper.querySelectorAll('.heatmap-cell').forEach(cell => {
+
+  wrapper.innerHTML = html;
+
+  // Clear day detail
+  const detail = document.getElementById('day-detail');
+  if (detail) detail.innerHTML = '';
+
+  // Click handlers
+  wrapper.querySelectorAll('.cal-cell:not(.cal-empty):not(.cal-future)').forEach(cell => {
     cell.addEventListener('click', async () => {
-      const dateStr = cell.dataset.date;
-      await showDayDetail(dateStr);
+      // Highlight selected cell
+      wrapper.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('cal-selected'));
+      cell.classList.add('cal-selected');
+      await showDayDetail(cell.dataset.date);
     });
   });
 }
 
-function getHeatmapColor(intensity) {
+function getCellBg(intensity) {
   if (intensity === 0) return 'var(--accent-light)';
-  if (intensity <= 0.25) return 'rgba(124, 58, 237, 0.3)';
-  if (intensity <= 0.5) return 'rgba(124, 58, 237, 0.5)';
-  if (intensity <= 0.75) return 'rgba(124, 58, 237, 0.7)';
+  if (intensity <= 0.25) return 'rgba(124, 58, 237, 0.25)';
+  if (intensity <= 0.5) return 'rgba(124, 58, 237, 0.4)';
+  if (intensity <= 0.75) return 'rgba(124, 58, 237, 0.6)';
   return 'var(--accent-primary)';
 }
 
 async function showDayDetail(dateStr) {
   const detail = document.getElementById('day-detail');
   if (!detail) return;
-  
+
   const completedIds = await getCompletionsForDate(dateStr);
   const allHabits = await getHabits(false);
   const date = new Date(dateStr + 'T00:00:00');
   const displayDate = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  
+
   if (completedIds.length === 0) {
     detail.innerHTML = `
-      <div class="chart-container">
+      <div class="chart-container" style="animation: slideIn 0.3s ease">
         <h3 class="chart-title">${displayDate}</h3>
         <p style="color: var(--text-secondary); font-size: 14px">No habits completed on this day</p>
       </div>
     `;
     return;
   }
-  
+
   const completedHabits = allHabits.filter(h => completedIds.includes(h.id));
   detail.innerHTML = `
     <div class="chart-container" style="animation: slideIn 0.3s ease">
